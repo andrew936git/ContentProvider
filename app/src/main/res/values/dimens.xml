@@ -3,4 +3,7 @@
     <dimen name="_28sp">28sp</dimen>
     <dimen name="_60dp">60dp</dimen>
     <dimen name="_40dp">40dp</dimen>
+    <dimen name="_20dp">20dp</dimen>
+    <dimen name="_300dp">300dp</dimen>
+    <dimen name="_6dp">6dp</dimen>
 </resources>

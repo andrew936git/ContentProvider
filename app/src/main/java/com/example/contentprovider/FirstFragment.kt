@@ -14,7 +14,12 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import com.example.contentprovider.databinding.FragmentFirstBinding
 import android.Manifest
+import android.content.ContentProviderOperation
 import android.content.pm.PackageManager
+import android.provider.ContactsContract.CommonDataKinds.Phone
+import android.provider.ContactsContract.CommonDataKinds.StructuredName
+import android.provider.ContactsContract.RawContacts
+import android.util.Log
 import androidx.fragment.app.FragmentTransaction
 import androidx.recyclerview.widget.LinearLayoutManager
 
@@ -22,7 +27,7 @@ class FirstFragment : Fragment(), CustomAdapter.NoteClickListener {
 
     private var _binding: FragmentFirstBinding? = null
     private val binding get() = _binding!!
-    private var contactList = mutableListOf<Contact>()
+    private var contactList = arrayListOf<Contact>()
     private var adapter: CustomAdapter? = null
 
 
@@ -34,6 +39,7 @@ class FirstFragment : Fragment(), CustomAdapter.NoteClickListener {
         return binding.root
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -41,11 +47,84 @@ class FirstFragment : Fragment(), CustomAdapter.NoteClickListener {
             setTitle("Мои контакты")
         }
 
+        binding.exitIV.setOnClickListener {
+            requireActivity().finishAffinity()
+        }
+
+        binding.searchIV.setOnClickListener {
+            val bundle = Bundle()
+            bundle.putParcelableArrayList("list", contactList)
+            val searchFragment = SearchFragment()
+            val transaction = fragmentManager?.beginTransaction()
+            searchFragment.arguments = bundle
+            transaction?.replace(R.id.fragment_container, searchFragment)
+            transaction?.addToBackStack(null)
+            transaction?.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+            transaction?.commit()
+        }
+
         if(ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_CONTACTS)
             != PackageManager.PERMISSION_GRANTED){
             permissionContact.launch(Manifest.permission.READ_CONTACTS)
+            adapter!!.notifyDataSetChanged()
         }
         else getContact()
+
+        binding.saveBT.setOnClickListener {
+
+            if(ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.WRITE_CONTACTS)
+                != PackageManager.PERMISSION_GRANTED){
+                permissionContact.launch(Manifest.permission.WRITE_CONTACTS)
+            }
+            else {
+                addContact()
+                adapter!!.notifyDataSetChanged()
+                contactList.clear()
+                getContact()
+                binding.nameET.text.clear()
+                binding.phoneET.text.clear()
+            }
+
+        }
+
+    }
+
+
+    private fun addContact() {
+        val name = binding.nameET.text.toString()
+        val phone = binding.phoneET.text.toString()
+        val listCPO = ArrayList<ContentProviderOperation>()
+
+        listCPO.add(
+            ContentProviderOperation.newInsert(RawContacts.CONTENT_URI)
+                .withValue(RawContacts.ACCOUNT_TYPE, null)
+                .withValue(RawContacts.ACCOUNT_NAME, null)
+                .build()
+        )
+
+        listCPO.add(
+            ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
+                .withValue(ContactsContract.Data.MIMETYPE, StructuredName.CONTENT_ITEM_TYPE)
+                .withValue(StructuredName.DISPLAY_NAME, name)
+                .build()
+            )
+
+        listCPO.add(
+            ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
+                .withValue(ContactsContract.Data.MIMETYPE, Phone.CONTENT_ITEM_TYPE)
+                .withValue(Phone.NUMBER, phone)
+                .withValue(Phone.TYPE, Phone.TYPE_MOBILE)
+                .build()
+        )
+
+        Toast.makeText(context, "Контакт добавлен", Toast.LENGTH_SHORT).show()
+        try {
+            requireContext().contentResolver.applyBatch(ContactsContract.AUTHORITY, listCPO)
+        }catch (e: Exception){
+            Log.e("Exception", e.message!!)
+        }
     }
 
     @SuppressLint("Recycle", "Range", "NotifyDataSetChanged")
@@ -101,7 +180,7 @@ class FirstFragment : Fragment(), CustomAdapter.NoteClickListener {
     override fun onMessageClick(contact: Contact) {
 
         val bundle = Bundle()
-        bundle.putSerializable("contact", contact)
+        bundle.putParcelable("contact", contact)
         val sendSMSFragment = SendSMSFragment()
         sendSMSFragment.arguments = bundle
         val transaction = fragmentManager?.beginTransaction()

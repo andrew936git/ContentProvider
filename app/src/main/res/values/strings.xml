@@ -4,4 +4,9 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="editSMSHint">Введите сообщение</string>
     <string name="sendSMSButtonText">Отправить сообщение</string>
+    <string name="nameETHint">Введите имя контакта</string>
+    <string name="saveButtonText">Сохранить контакт</string>
+    <string name="phoneETHint">Введите номер телефона</string>
+    <string name="searchETHint">Поиск</string>
+    <string name="searchBTText">Найти</string>
 </resources>

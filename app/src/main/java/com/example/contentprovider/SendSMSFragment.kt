@@ -47,8 +47,8 @@ class SendSMSFragment : Fragment() {
             }
         }
 
-        val contact = arguments?.getSerializable("contact") as Contact
-        val phoneNumber = contact.phone
+        val contact = arguments?.getParcelable<Contact>("contact")
+        val phoneNumber = contact?.phone
         binding.numberTV.text = phoneNumber
         binding.sendSMS.setOnClickListener{
             if(ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_PHONE_STATE)
