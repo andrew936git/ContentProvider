@@ -13,6 +13,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
+import androidx.fragment.app.FragmentTransaction
 import com.example.contentprovider.databinding.FragmentSendSMSBinding
 
 
@@ -31,6 +32,20 @@ class SendSMSFragment : Fragment() {
     @SuppressLint("ObsoleteSdkInt")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        binding.toolbar.apply {
+            setTitle("Мои контакты")
+            setNavigationIcon(R.drawable.ic_home)
+            setNavigationOnClickListener {
+
+                val transaction = fragmentManager?.beginTransaction()
+                transaction?.replace(R.id.fragment_container, FirstFragment())
+                transaction?.addToBackStack(null)
+                transaction?.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                transaction?.commit()
+
+            }
+        }
 
         val contact = arguments?.getSerializable("contact") as Contact
         val phoneNumber = contact.phone

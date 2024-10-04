@@ -37,6 +37,10 @@ class FirstFragment : Fragment(), CustomAdapter.NoteClickListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        binding.toolbar.apply {
+            setTitle("Мои контакты")
+        }
+
         if(ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_CONTACTS)
             != PackageManager.PERMISSION_GRANTED){
             permissionContact.launch(Manifest.permission.READ_CONTACTS)
